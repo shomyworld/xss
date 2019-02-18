@@ -3,6 +3,10 @@
 import requests
 from bs4 import BeautifulSoup
 import pprint
+from selenium import webdriver
+import time
+import re
+
 
 def getSoup(url,s):
     r = s.get(url)
@@ -10,15 +14,20 @@ def getSoup(url,s):
     soup = BeautifulSoup(html,"html.parser")
     return soup
 
-url = "https://www.owasp.org/index.php/XSS_Filter_Evasion_Cheat_Sheet"
-#url = "https://jpcertcc.github.io/OWASPdocuments/CheatSheets/XSSFilterEvasion.html"
+url = input("Input url > ")
 s = requests.session()
-soup = getSoup(url,s)
-pre = soup.find_all("pre")
-for i in pre:
+#soup = getSoup(url,s)
+
+driver = webdriver.Chrome()
+driver.get(url)
+html = driver.page_source.encode('utf-8')
+soup = BeautifulSoup(html,"html.parser")
+code = soup.find_all("code")
+for i in code:
     print(i.string)
-with open("./xss_duplicat","a") as f:
-    for i in pre:
+
+with open("./xss_pattern","a") as f:
+    for i in code:
         if not isinstance(i.string,type(None)):
             f.write(i.string)
         

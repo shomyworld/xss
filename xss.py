@@ -2,12 +2,12 @@
 from selenium import webdriver
 from selenium.webdriver.common.alert import Alert
 import time
-from bs4 import BeautifulSoup
-import requests
-import re
+from bs4 import BeautifulSoup 
+import requests 
+import re 
 import sys
 import traceback
-
+import pprint
 
 class pycolor:
     BLACK = '\033[30m'
@@ -35,6 +35,17 @@ logo = '''
 print(pycolor.RED+logo+pycolor.END+"\n")
 
 
+def login(url,s,name,value):
+    data = {}
+    for i in range(len(name)):
+        if isinstance(value[i],type(None)):
+            print(name[i],end=" : ")
+            data[name[i]] = input("")
+        else:
+            data[name[i]] = value[i]
+    r = s.post(url,data=data)
+    return r
+
 
 def xss_insert(s,url,method,xss,name):
     if method == "get":
@@ -46,6 +57,7 @@ def xss_insert(s,url,method,xss,name):
                 r = s.get(url,params=data)
                 URL = r.url
                 driver.execute_script("window.open("+"'"+URL+"'" +", 'newtab')") #JavaScriptで新規タブを開く
+                time.sleep(1)
     else:
         print("method = post")
         for x in xss:
@@ -55,28 +67,33 @@ def xss_insert(s,url,method,xss,name):
                 r = s.post(url,data=data)
                 URL = r.url
                 driver.execute_script("window.open("+"'"+URL+"'" +", 'newtab')")
+                time.sleep(1)
+
 
 #相対URLか絶対URLかで、送信先を決める
 def check_url(soup,url):
     try:
         action = soup.find("form").get("action")
-        print("-----------------",action)
-        if isinstance(re.match("http",action),type(None)):
-            return url+action
+        #actionがhttpから始まる場合の処理
+        if not isinstance(re.match("http",action),type(None)):
+            return action
+        #actionがhttpから始まらない場合の処理
+        #domain+action
         else:
-            return url
+            pattern="h\w+://\w+.\w+"
+            res = re.match(pattern,url)
+            domain = res.group()
+            return domain + action
     except:
         traceback.print_exc()
         return url
 
-#xss.txtから、xssのパターンをxss配列に書き込む
+#xss_patternから、xssのパターンをxss配列に書き込む
 xss = []
 with open("xss_pattern","r") as f:
     xss = f.read().splitlines()
 
-
-print("Please input Target URL\n")
-url = input("Target URL:")
+url = input("Target URL : ")
 #オプションによって、開くブラウザを変更する
 try:
     if sys.argv[1] == "-f":
@@ -87,24 +104,35 @@ except:
     driver = webdriver.Chrome()
 
 s = requests.session()
-r = s.get(url)
-html = r.content
-soup = BeautifulSoup(html,"html.parser")
-input = []
+inputag = []
 name = []
-value=[]
-#formが複数ある場合の処理
-form = soup.find_all("form")
-input = soup.find_all("input")
-for i in range(len(input)-1):
-    name.append(input[i].get("name"))
-    value.append(input[i].get("value"))
-print("name = ",name)
-driver.get(url)
-#絶対URLか相対URLか判定
-#print("--------------",soup)
-action = check_url(soup,url)
+value = []
 
+driver.get(url)
+#Javascriptが起動した状態のhtmlを取得
+html = driver.page_source.encode('utf-8')
+soup = BeautifulSoup(html,"html.parser")
+
+#formの処理
+form = soup.find("form")
+inputag = soup.find_all("input")
+for i in range(len(inputag)-1):
+    name.append(inputag[i].get("name"))
+    value.append(inputag[i].get("value"))
+print("name = ",name) 
+print("value = ",value)
+
+if isinstance(form.get("action"),type(None)):
+    action = url
+else:
+    action = check_url(soup,url)
+
+print("action = ",action)
+
+#ログインに渡すURLはformのaction属性で、指定されていない場合は、元のurlを指定する
+r = login(action,s,name,value)
+print(r.text)
+"""
 #xss入力
 try:
     if soup.find("form").get("method").lower() == "get":
@@ -120,5 +148,4 @@ try:
 except:
    method = "get" 
    xss_insert(s,action,method,xss,name)
-  
-
+"""
