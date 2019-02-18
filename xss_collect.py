@@ -1,5 +1,5 @@
 #coding:utf-8
-#xssのパターンを収集して、xss.txtに入れる
+#xssのパターンを収集して、xss_patternに入れる
 import requests
 from bs4 import BeautifulSoup
 import pprint
