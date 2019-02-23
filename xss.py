@@ -74,11 +74,11 @@ def xss_insert(s,url,method,xss,name):
 def check_url(soup,url):
     try:
         action = soup.find("form").get("action")
-        #actionがhttpから始まる場合の処理
-        if not isinstance(re.match("http",action),type(None)):
+        #actionが(http||https)から始まる場合の処理
+        #if not isinstance(re.match("http",action),type(None)):
+        if "http" in action:
             return action
         #actionがhttpから始まらない場合の処理
-        #domain+action
         else:
             pattern="h\w+://\w+.\w+"
             res = re.match(pattern,url)
@@ -131,8 +131,8 @@ print("action = ",action)
 
 #ログインに渡すURLはformのaction属性で、指定されていない場合は、元のurlを指定する
 r = login(action,s,name,value)
-print(r.text)
-"""
+html = r.text
+soup = BeautifulSoup(html,"html.parser")
 #xss入力
 try:
     if soup.find("form").get("method").lower() == "get":
@@ -148,4 +148,3 @@ try:
 except:
    method = "get" 
    xss_insert(s,action,method,xss,name)
-"""
