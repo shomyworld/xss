@@ -2,9 +2,9 @@
 from selenium import webdriver
 from selenium.webdriver.common.alert import Alert
 import time
-from bs4 import BeautifulSoup 
-import requests 
-import re 
+from bs4 import BeautifulSoup
+import requests
+import re
 import sys
 import traceback
 import pprint
@@ -27,9 +27,9 @@ class pycolor:
 logo = '''
    _  ____________    ______            __
   | |/ / ___/ ___/   /_  __/___  ____  / /
-  |   /\__ \\__ \     / / / __ \/ __ \/ / 
- /   |___/ /__/ /    / / / /_/ / /_/ / /  
-/_/|_/____/____/    /_/  \____/\____/_/   
+  |   /\__ \\__ \     / / / __ \/ __ \/ /
+ /   |___/ /__/ /    / / / /_/ / /_/ / /
+/_/|_/____/____/    /_/  \____/\____/_/
                                           '''
 
 print(pycolor.RED+logo+pycolor.END+"\n")
@@ -63,7 +63,7 @@ def xss_insert(s,url,method,xss,name):
         for x in xss:
             data = {}
             for n in name:
-                data[n] = x  
+                data[n] = x
                 r = s.post(url,data=data)
                 URL = r.url
                 driver.execute_script("window.open("+"'"+URL+"'" +", 'newtab')")
@@ -119,7 +119,7 @@ inputag = soup.find_all("input")
 for i in range(len(inputag)-1):
     name.append(inputag[i].get("name"))
     value.append(inputag[i].get("value"))
-print("name = ",name) 
+print("name = ",name)
 print("value = ",value)
 
 if isinstance(form.get("action"),type(None)):
@@ -146,5 +146,5 @@ try:
         xss_insert(s,action,method,xss,name)
 #methodがないときの処理
 except:
-   method = "get" 
+   method = "get"
    xss_insert(s,action,method,xss,name)
