@@ -24,19 +24,30 @@ def login():
             element[i.get('name')] = input()
         else:
             element[i.get('name')] = i.get('value')
+    # ログイン
     r = s.post(url, data=element)
-    # ログイン後のsessionをseleniumに渡す
+    return r, s, url
+
+
+# ログイン後のsessionをseleniumに渡す
+def session_to_selenium(r, s, url):
     driver = webdriver.Chrome()
+    # ページをGETして、クッキーを取得
     driver.get(url)
+    domain = driver.get_cookies()[0]['domain']
+    # クッキー削除
+    driver.delete_all_cookies()
+    # ログイン後のクッキーを追加
     for name, value in s.cookies.get_dict().items():
         tmp = {}
         tmp['name'] = name
         tmp['value'] = value
-        tmp['domain'] = '.qiita.com'
+        tmp['domain'] = domain
         driver.add_cookie(tmp)
+    # ログイン後のページを表示
     driver.get(url)
-    driver.close()
 
 
 if __name__ == '__main__':
-    login()
+    r, s, url = login()
+    session_to_selenium(r, s, url)
