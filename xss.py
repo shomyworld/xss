@@ -1,13 +1,16 @@
-#-*- coding:UTF-8 -*-
+# -*- coding:UTF-8 -*-
 from selenium import webdriver
 from selenium.webdriver.common.alert import Alert
 import time
 from bs4 import BeautifulSoup
-import requests
+# import requests
 import re
 import sys
 import traceback
-import pprint
+# import pprint
+import getopt
+from signin import *
+
 
 class pycolor:
     BLACK = '\033[30m'
@@ -35,28 +38,30 @@ logo = '''
 print(pycolor.RED+logo+pycolor.END+"\n")
 
 
-def login(url,s,name,value):
-    data = {}
-    for i in range(len(name)):
-        if isinstance(value[i],type(None)):
-            print(name[i],end=" : ")
-            data[name[i]] = input("")
-        else:
-            data[name[i]] = value[i]
-    r = s.post(url,data=data)
-    return r
+def usage():
+    print("[*] Usage")
+    print("python3 xss.py < credential/qiita")
+    sys.exit(0)
 
 
-def xss_insert(s,url,method,xss,name):
+def payload():
+    # xss_patternをxss配列に書き込む
+    xss = []
+    with open("xss_pattern", "r") as f:
+        xss = f.read().splitlines()
+    return xss
+
+
+def xss_insert(s, url, method, xss, name, driver):
     if method == "get":
         print("method = get")
         for x in xss:
             data = {}
             for n in name:
-                data[n] = x   #送信するパラメータ
-                r = s.get(url,params=data)
+                data[n] = x  # 送信するパラメータ
+                r = s.get(url, params=data)
                 URL = r.url
-                driver.execute_script("window.open("+"'"+URL+"'" +", 'newtab')") #JavaScriptで新規タブを開く
+                driver.execute_script("window.open("+"'"+URL+"'" +", 'newtab')") # JavaScriptで新規タブを開く
                 time.sleep(1)
     else:
         print("method = post")
@@ -64,87 +69,103 @@ def xss_insert(s,url,method,xss,name):
             data = {}
             for n in name:
                 data[n] = x
-                r = s.post(url,data=data)
+                r = s.post(url, data=data)
                 URL = r.url
                 driver.execute_script("window.open("+"'"+URL+"'" +", 'newtab')")
                 time.sleep(1)
 
 
-#相対URLか絶対URLかで、送信先を決める
-def check_url(soup,url):
+# 相対URLか絶対URLかで、送信先を決める
+def check_url(soup, url):
     try:
         action = soup.find("form").get("action")
-        #actionが(http||https)から始まる場合の処理
-        #if not isinstance(re.match("http",action),type(None)):
+        # actionが(http||https)から始まる場合の処理
+        # if not isinstance(re.match("http",action),type(None)):
         if "http" in action:
             return action
-        #actionがhttpから始まらない場合の処理
+        # actionがhttpから始まらない場合の処理
         else:
             pattern="h\w+://\w+.\w+"
-            res = re.match(pattern,url)
+            res = re.match(pattern, url)
             domain = res.group()
             return domain + action
     except:
         traceback.print_exc()
         return url
 
-#xss_patternから、xssのパターンをxss配列に書き込む
-xss = []
-with open("xss_pattern","r") as f:
-    xss = f.read().splitlines()
 
-url = input("Target URL : ")
-#オプションによって、開くブラウザを変更する
-try:
-    if sys.argv[1] == "-f":
-        driver = webdriver.Firefox()
-    elif sys.argv[1] == "-s":
-        driver = webdriver.Safari()
-except:
-    driver = webdriver.Chrome()
+def main():
 
-s = requests.session()
-inputag = []
-name = []
-value = []
+    if not len(sys.argv[1:]):
+        usage()
 
-driver.get(url)
-#Javascriptが起動した状態のhtmlを取得
-html = driver.page_source.encode('utf-8')
-soup = BeautifulSoup(html,"html.parser")
+    # ログイン処理
+    r, s, url = login()
 
-#formの処理
-form = soup.find("form")
-inputag = soup.find_all("input")
-for i in range(len(inputag)-1):
-    name.append(inputag[i].get("name"))
-    value.append(inputag[i].get("value"))
-print("name = ",name)
-print("value = ",value)
+    # コマンドラインオプションの読み込み
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "cfs:")
+    except getopt.GetoptError as err:
+        print(str(err))
+        usage()
 
-if isinstance(form.get("action"),type(None)):
-    action = url
-else:
-    action = check_url(soup,url)
+    for o, a in opts:
+        if o in ("-f", "--firefox"):
+            driver = webdriver.Firefox()
+        elif o in ("-s", "--safari"):
+            driver = webdriver.Safari()
+        elif o in ("-c", "--chrome"):
+            driver = webdriver.Chrome()
+        else:
+            usage()
 
-print("action = ",action)
+    # ログイン後のsessionをseleniumに渡す
+    session_to_selenium(r, s, url, driver)
 
-#ログインに渡すURLはformのaction属性で、指定されていない場合は、元のurlを指定する
-r = login(action,s,name,value)
-html = r.text
-soup = BeautifulSoup(html,"html.parser")
-#xss入力
-try:
-    if soup.find("form").get("method").lower() == "get":
-        method = "get"
-        xss_insert(s,action,method,xss,name)
-    elif soup.find("form").get("method").lower() == "post":
-        method = "post"
-        xss_insert(s,action,method,xss,name)
+    # xssをロードする
+    xss = payload()
+
+    inputag = []
+    name = []
+    value = []
+
+    # Javascriptが起動した状態のhtmlを取得
+    html = driver.page_source.encode('utf-8')
+    soup = BeautifulSoup(html, "html.parser")
+
+    # formの処理
+    form = soup.find("form")
+    inputag = soup.find_all("input")
+    for i in range(len(inputag)-1):
+        name.append(inputag[i].get("name"))
+        value.append(inputag[i].get("value"))
+    print("name = ", name)
+    print("value = ", value)
+    print("form =", form)
+
+    if isinstance(form.get("action"), type(None)):
+        action = url
     else:
-        method = "get"
-        xss_insert(s,action,method,xss,name)
-#methodがないときの処理
-except:
-   method = "get"
-   xss_insert(s,action,method,xss,name)
+        action = check_url(soup, url)
+
+    print("action = ", action)
+
+    # xss入力
+    try:
+        if soup.find("form").get("method").lower() == "get":
+            method = "get"
+            xss_insert(s, action, method, xss, name, driver)
+        elif soup.find("form").get("method").lower() == "post":
+            method = "post"
+            xss_insert(s, action, method, xss, name, driver)
+        else:
+            method = "get"
+            xss_insert(s, action, method, xss, name, driver)
+    # methodがないときの処理
+    except:
+       method = "get"
+       xss_insert(s, action, method, xss, name, driver)
+
+
+if __name__ == '__main__':
+    main()

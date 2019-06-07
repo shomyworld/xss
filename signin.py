@@ -30,8 +30,7 @@ def login():
 
 
 # ログイン後のsessionをseleniumに渡す
-def session_to_selenium(r, s, url):
-    driver = webdriver.Chrome()
+def session_to_selenium(r, s, url, driver):
     # ページをGETして、クッキーを取得
     driver.get(url)
     domain = driver.get_cookies()[0]['domain']

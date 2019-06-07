@@ -1,1 +1,3 @@
 credential/*
+__pycache__
+geckodriver.log
