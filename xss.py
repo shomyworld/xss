@@ -3,13 +3,11 @@ from selenium import webdriver
 from selenium.webdriver.common.alert import Alert
 import time
 from bs4 import BeautifulSoup
-# import requests
 import re
 import sys
 import traceback
-# import pprint
-import getopt
 from signin import *
+import argparse
 
 
 class pycolor:
@@ -40,7 +38,9 @@ print(pycolor.RED+logo+pycolor.END+"\n")
 
 def usage():
     print("[*] Usage")
+    print("python3 xss.py")
     print("python3 xss.py -c < credential/qiita")
+    print("")
     print("cat credential/qiita")
     print("https://qiita.com/login")
     print("email")
@@ -99,29 +99,40 @@ def check_url(soup, url):
 
 
 def main():
+    # パーサーを作る
+    parser = argparse.ArgumentParser(add_help = False)
 
-    if not len(sys.argv[1:]):
+    # 引数の追加
+    parser.add_argument('-f', '--firefox', action = "store_true")
+    parser.add_argument('-s', '--safari', action = "store_true")
+    parser.add_argument('-c', '--chrome', action = "store_true")
+    parser.add_argument('-m', '--manual', action = "store_true")
+    parser.add_argument('-a', '--auto', action = "store_true")
+    parser.add_argument('-h', '--help', action = "store_true")
+
+    # 引数を解析する
+    args = parser.parse_args()
+
+    # driverの選択
+    if args.firefox:
+        driver = webdriver.Firefox()
+    elif args.safari:
+        driver = webdriver.Safari()
+    elif args.chrome:
+        driver = webdriver.Chrome()
+    elif args.help:
         usage()
+        sys.exit(0)
+    else:
+        driver = webdriver.Chrome()
 
-    # ログイン処理
-    r, s, url = login()
-
-    # コマンドラインオプションの読み込み
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "cfs:")
-    except getopt.GetoptError as err:
-        print(str(err))
-        usage()
-
-    for o, a in opts:
-        if o in ("-f", "--firefox"):
-            driver = webdriver.Firefox()
-        elif o in ("-s", "--safari"):
-            driver = webdriver.Safari()
-        elif o in ("-c", "--chrome"):
-            driver = webdriver.Chrome()
-        else:
-            usage()
+    # auto/manualログインの選択
+    if args.manual:
+        r, s, url = manual_login()
+    elif args.auto:
+        r, s, url = auto_login()
+    else:
+        r, s, url = manual_login()
 
     # ログイン後のsessionをseleniumに渡す
     session_to_selenium(r, s, url, driver)
@@ -143,9 +154,6 @@ def main():
     for i in range(len(inputag)-1):
         name.append(inputag[i].get("name"))
         value.append(inputag[i].get("value"))
-    print("name = ", name)
-    print("value = ", value)
-    print("form =", form)
 
     if isinstance(form.get("action"), type(None)):
         action = url
