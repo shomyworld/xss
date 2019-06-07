@@ -40,7 +40,11 @@ print(pycolor.RED+logo+pycolor.END+"\n")
 
 def usage():
     print("[*] Usage")
-    print("python3 xss.py < credential/qiita")
+    print("python3 xss.py -c < credential/qiita")
+    print("cat credential/qiita")
+    print("https://qiita.com/login")
+    print("email")
+    print("password")
     sys.exit(0)
 
 
