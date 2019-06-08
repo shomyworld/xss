@@ -17,6 +17,7 @@ Overview
 - pip3 install -r requirements.txt
 
 ## Usage
+```
 usage: python3 xss.py ([-h]|[-f]|[-s]|[-c])[-m]
 usage: python3 xss.py ([-h]|[-f]|[-s]|[-c])[-a] < credential/qiita
 
@@ -33,3 +34,4 @@ cat credential/qiita
 https://qiita.com/login
 email
 password
+```
