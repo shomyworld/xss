@@ -1,12 +1,14 @@
 # -*- coding:UTF-8 -*-
 from selenium import webdriver
-from selenium.webdriver.common.alert import Alert
+# from selenium.webdriver.common.alert import Alert
 import time
 from bs4 import BeautifulSoup
 import re
 import sys
 import traceback
-from signin import *
+from signin import auto_login
+from signin import manual_login
+from signin import session_to_selenium
 import argparse
 
 
@@ -24,6 +26,7 @@ class pycolor:
     UNDERLINE = '\033[4m'
     INVISIBLE = '\033[08m'
     REVERCE = '\033[07m'
+
 
 logo = '''
    _  ____________    ______            __
@@ -65,7 +68,8 @@ def xss_insert(s, url, method, xss, name, driver):
                 data[n] = x  # 送信するパラメータ
                 r = s.get(url, params=data)
                 URL = r.url
-                driver.execute_script("window.open("+"'"+URL+"'" +", 'newtab')") # JavaScriptで新規タブを開く
+                # JavaScriptで新規タブを開く
+                driver.execute_script("window.open("+"'"+URL+"'"+", 'newtab')")
                 time.sleep(1)
     else:
         print("method = post")
@@ -75,7 +79,7 @@ def xss_insert(s, url, method, xss, name, driver):
                 data[n] = x
                 r = s.post(url, data=data)
                 URL = r.url
-                driver.execute_script("window.open("+"'"+URL+"'" +", 'newtab')")
+                driver.execute_script("window.open("+"'"+URL+"'"+", 'newtab')")
                 time.sleep(1)
 
 
@@ -89,7 +93,7 @@ def check_url(soup, url):
             return action
         # actionがhttpから始まらない場合の処理
         else:
-            pattern="h\w+://\w+.\w+"
+            pattern = r"h\w+://\w+.\w+"
             res = re.match(pattern, url)
             domain = res.group()
             return domain + action
@@ -100,15 +104,15 @@ def check_url(soup, url):
 
 def main():
     # パーサーを作る
-    parser = argparse.ArgumentParser(add_help = False)
+    parser = argparse.ArgumentParser(add_help=False)
 
     # 引数の追加
-    parser.add_argument('-f', '--firefox', action = "store_true")
-    parser.add_argument('-s', '--safari', action = "store_true")
-    parser.add_argument('-c', '--chrome', action = "store_true")
-    parser.add_argument('-m', '--manual', action = "store_true")
-    parser.add_argument('-a', '--auto', action = "store_true")
-    parser.add_argument('-h', '--help', action = "store_true")
+    parser.add_argument('-f', '--firefox', action='store_true')
+    parser.add_argument('-s', '--safari', action='store_true')
+    parser.add_argument('-c', '--chrome', action='store_true')
+    parser.add_argument('-m', '--manual', action='store_true')
+    parser.add_argument('-a', '--auto', action='store_true')
+    parser.add_argument('-h', '--help', action='store_true')
 
     # 引数を解析する
     args = parser.parse_args()
@@ -175,8 +179,8 @@ def main():
             xss_insert(s, action, method, xss, name, driver)
     # methodがないときの処理
     except:
-       method = "get"
-       xss_insert(s, action, method, xss, name, driver)
+        method = "get"
+        xss_insert(s, action, method, xss, name, driver)
 
 
 if __name__ == '__main__':

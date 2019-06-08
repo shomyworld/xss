@@ -5,6 +5,7 @@ from selenium import webdriver
 import argparse
 import sys
 
+
 def usage():
     print("[*] Usage")
     print("python3 xss.py -c < credential/qiita")
@@ -77,15 +78,15 @@ def session_to_selenium(r, s, url, driver):
 
 def main():
     # パーサーを作る
-    parser = argparse.ArgumentParser(add_help = False)
+    parser = argparse.ArgumentParser(add_help=False)
 
     # 引数の追加
-    parser.add_argument('-f', '--firefox', action = "store_true")
-    parser.add_argument('-s', '--safari', action = "store_true")
-    parser.add_argument('-c', '--chrome', action = "store_true")
-    parser.add_argument('-m', '--manual', action = "store_true")
-    parser.add_argument('-a', '--auto', action = "store_true")
-    parser.add_argument('-h', '--help', action = "store_true")
+    parser.add_argument('-f', '--firefox', action='store_true')
+    parser.add_argument('-s', '--safari', action='store_true')
+    parser.add_argument('-c', '--chrome', action='store_true')
+    parser.add_argument('-m', '--manual', action='store_true')
+    parser.add_argument('-a', '--auto', action='store_true')
+    parser.add_argument('-h', '--help', action='store_true')
 
     # 引数を解析する
     args = parser.parse_args()

@@ -1,15 +1,32 @@
-# XSS自動化
-- 指定したURLのフォームに、xss_patternを打ち込む
-- 自動ログイン機能
-- 手動ログイン機能
+XSS TOOL
+===
+Overview
 
-## チケット
-- formが複数ある場合、それぞれのformにxss_patternを打ち込めるようにする
-- xss auditorの検知機能の追加
-- 自動ページ遷移機能の追加
+## Description
+- input xss_patern form of url specified
+- auto login function
+- manual login function
 
-## 使い方
-python3 xss.py -c < credential/qiita
+## Ticket
+- There are seveal form,input xss_patern each form
+- add detect xss auditor function
+- add auto page transition function
+
+## Requirement
+- python3
+- pip3 install -r requirements.txt
+
+## Usage
+usage: python3 xss.py ([-h]|[-f]|[-s]|[-c])[-m]
+usage: python3 xss.py ([-h]|[-f]|[-s]|[-c])[-a] < credential/qiita
+
+optional arguments:
+  -h, --help     show this help message and exit
+  -f, --firefox  with Firefox
+  -s, --safari   with Safari
+  -c, --chrome   with Chrome
+  -m, --manual   manual login
+  -a, --auto     auto login
 
 cat credential/qiita
 
