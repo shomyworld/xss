@@ -17,6 +17,47 @@ def usage():
     sys.exit(0)
 
 
+def arg():
+    # パーサーを作る
+    parser = argparse.ArgumentParser(add_help=False)
+
+    # 引数の追加
+    parser.add_argument('-f', '--firefox', action='store_true')
+    parser.add_argument('-s', '--safari', action='store_true')
+    parser.add_argument('-c', '--chrome', action='store_true')
+    parser.add_argument('-m', '--manual', action='store_true')
+    parser.add_argument('-a', '--auto', action='store_true')
+    parser.add_argument('-h', '--help', action='store_true')
+    parser.add_argument('-n', '--nologin', action='store_true')
+
+    # 引数を解析する
+    args = parser.parse_args()
+    if args.firefox:
+        driver = webdriver.Firefox()
+    elif args.safari:
+        driver = webdriver.Safari()
+    elif args.chrome:
+        driver = webdriver.Chrome()
+    elif args.help:
+        usage()
+        sys.exit()
+    else:
+        driver = webdriver.Chrome()
+
+    if args.nologin:
+        r, s, url = nologin()
+        return r, s, url, driver, True
+    elif args.manual:
+        r, s, url = manual_login(driver)
+        return r, s, url, driver, False
+    elif args.auto:
+        r, s, url = auto_login(driver)
+        return r, s, url, driver, False
+    else:
+        r, s, url = manual_login(driver)
+        return r, s, url, driver, False
+
+
 def getSoup(r):
     html = r.content
     soup = BeautifulSoup(html, "html.parser")
@@ -24,16 +65,43 @@ def getSoup(r):
 
 
 # ファイルにログイン情報を書き込んで起動時にリダイレクト入力する
-def auto_login():
+def auto_login(driver):
     url = input()
     s = requests.session()
-    r = s.get(url)
-    soup = getSoup(r)
+    # r = s.get(url)
+    driver.get(url)
+    html = driver.page_source.encode('utf-8')
+    soup = BeautifulSoup(html, "html.parser")
+    # soup = getSoup(r)
     input_all = soup.form.find_all("input")
     element = {}
     for i in input_all:
-        if i.get('value') is None:
+        if i.get('value') is None or i.get('value') == '':
             element[i.get('name')] = input()
+        else:
+            element[i.get('name')] = i.get('value')
+    # ログイン
+    print(element)
+    print(url)
+    r = s.post(url, data=element)
+    print(r.text)
+    return r, s, url
+
+
+# 対話的にログインする
+def manual_login(driver):
+    url = input("target url > ")
+    s = requests.session()
+    # r = s.get(url)
+    driver.get(url)
+    html = driver.page_source.encode('utf-8')
+    soup = BeautifulSoup(html, "html.parser")
+    # soup = getSoup(r)
+    input_all = soup.form.find_all("input")
+    element = {}
+    for i in input_all:
+        if i.get('value') is None or i.get('value') == '':
+            element[i.get('name')] = input(i.get('name')+' : ')
         else:
             element[i.get('name')] = i.get('value')
     # ログイン
@@ -41,21 +109,11 @@ def auto_login():
     return r, s, url
 
 
-# 対話的にログインする
-def manual_login():
+# ログイン機能のいらないサイト
+def nologin():
     url = input("target url > ")
     s = requests.session()
     r = s.get(url)
-    soup = getSoup(r)
-    input_all = soup.form.find_all("input")
-    element = {}
-    for i in input_all:
-        if i.get('value') is None:
-            element[i.get('name')] = input(i.get('name')+' : ')
-        else:
-            element[i.get('name')] = i.get('value')
-    # ログイン
-    r = s.post(url, data=element)
     return r, s, url
 
 
@@ -77,38 +135,7 @@ def session_to_selenium(r, s, url, driver):
 
 
 def main():
-    # パーサーを作る
-    parser = argparse.ArgumentParser(add_help=False)
-
-    # 引数の追加
-    parser.add_argument('-f', '--firefox', action='store_true')
-    parser.add_argument('-s', '--safari', action='store_true')
-    parser.add_argument('-c', '--chrome', action='store_true')
-    parser.add_argument('-m', '--manual', action='store_true')
-    parser.add_argument('-a', '--auto', action='store_true')
-    parser.add_argument('-h', '--help', action='store_true')
-
-    # 引数を解析する
-    args = parser.parse_args()
-    if args.firefox:
-        driver = webdriver.Firefox()
-    elif args.safari:
-        driver = webdriver.Safari()
-    elif args.chrome:
-        driver = webdriver.Chrome()
-    elif args.help:
-        usage()
-        sys.exit()
-    else:
-        driver = webdriver.Chrome()
-
-    if args.manual:
-        r, s, url = manual_login()
-    elif args.auto:
-        r, s, url = auto_login()
-    else:
-        r, s, url = manual_login()
-
+    r, s, url, driver, boolean = arg()
     session_to_selenium(r, s, url, driver)
 
 

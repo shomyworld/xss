@@ -1,15 +1,9 @@
 # -*- coding:UTF-8 -*-
-from selenium import webdriver
-# from selenium.webdriver.common.alert import Alert
 import time
 from bs4 import BeautifulSoup
 import re
-import sys
-import traceback
-from signin import auto_login
-from signin import manual_login
 from signin import session_to_selenium
-import argparse
+from signin import arg
 
 
 class pycolor:
@@ -39,18 +33,6 @@ logo = '''
 print(pycolor.RED+logo+pycolor.END+"\n")
 
 
-def usage():
-    print("[*] Usage")
-    print("python3 xss.py")
-    print("python3 xss.py -c < credential/qiita")
-    print("")
-    print("cat credential/qiita")
-    print("https://qiita.com/login")
-    print("email")
-    print("password")
-    sys.exit(0)
-
-
 def payload():
     # xss_patternをxss配列に書き込む
     xss = []
@@ -59,28 +41,34 @@ def payload():
     return xss
 
 
-def xss_insert(s, url, method, xss, name, driver):
+def xss_insert(s, url, method, xss, name, value, driver):
     if method == "get":
         print("method = get")
         for x in xss:
             data = {}
-            for n in name:
-                data[n] = x  # 送信するパラメータ
-                r = s.get(url, params=data)
-                URL = r.url
-                # JavaScriptで新規タブを開く
-                driver.execute_script("window.open("+"'"+URL+"'"+", 'newtab')")
-                time.sleep(1)
+            for n, v in zip(name, value):
+                if v == '' or v is None:
+                    data[n] = x
+                else:
+                    data[n] = v  # 送信するパラメータ
+            r = s.get(url, params=data)  # bug
+            URL = r.url
+            # JavaScriptで新規タブを開く
+            driver.execute_script("window.open("+"'"+URL+"'"+", 'newtab')")
+            time.sleep(3)
     else:
         print("method = post")
         for x in xss:
             data = {}
-            for n in name:
-                data[n] = x
-                r = s.post(url, data=data)
-                URL = r.url
-                driver.execute_script("window.open("+"'"+URL+"'"+", 'newtab')")
-                time.sleep(1)
+            for n, v in zip(name, value):
+                if v == '' or v is None:
+                    data[n] = x
+                else:
+                    data[n] = v  # 送信するパラメータ
+            r = s.post(url, data=data)
+            URL = r.url
+            driver.execute_script("window.open("+"'"+URL+"'"+", 'newtab')")
+            time.sleep(3)
 
 
 # 相対URLか絶対URLかで、送信先を決める
@@ -93,56 +81,27 @@ def check_url(soup, url):
             return action
         # actionがhttpから始まらない場合の処理
         else:
-            pattern = r"h\w+://\w+.\w+"
+            pattern = r"(?:https?|ftps?)://([A-Za-z0-9-]{1,63}\.)*(?:(com)|(org)|([A-Za-z0-9-]{1,63}\.)([A-Za-z0-9-]{1,63}))"
             res = re.match(pattern, url)
             domain = res.group()
             return domain + action
-    except:
-        traceback.print_exc()
+    except AttributeError:
         return url
 
 
 def main():
-    # パーサーを作る
-    parser = argparse.ArgumentParser(add_help=False)
-
-    # 引数の追加
-    parser.add_argument('-f', '--firefox', action='store_true')
-    parser.add_argument('-s', '--safari', action='store_true')
-    parser.add_argument('-c', '--chrome', action='store_true')
-    parser.add_argument('-m', '--manual', action='store_true')
-    parser.add_argument('-a', '--auto', action='store_true')
-    parser.add_argument('-h', '--help', action='store_true')
-
-    # 引数を解析する
-    args = parser.parse_args()
-
-    # driverの選択
-    if args.firefox:
-        driver = webdriver.Firefox()
-    elif args.safari:
-        driver = webdriver.Safari()
-    elif args.chrome:
-        driver = webdriver.Chrome()
-    elif args.help:
-        usage()
-        sys.exit(0)
-    else:
-        driver = webdriver.Chrome()
-
-    # auto/manualログインの選択
-    if args.manual:
-        r, s, url = manual_login()
-    elif args.auto:
-        r, s, url = auto_login()
-    else:
-        r, s, url = manual_login()
-
-    # ログイン後のsessionをseleniumに渡す
-    session_to_selenium(r, s, url, driver)
-
     # xssをロードする
     xss = payload()
+
+    # 引数を解析
+    r, s, url, driver, flag = arg()
+
+    # nologinオプションの時の処理
+    if flag:
+        driver.get(url)
+    else:
+        # ログイン後のsessionをseleniumに渡す
+        session_to_selenium(r, s, url, driver)
 
     inputag = []
     name = []
@@ -154,7 +113,8 @@ def main():
 
     # formの処理
     form = soup.find("form")
-    inputag = soup.find_all("input")
+    # inputag = soup.find_all("input")
+    inputag = soup.form.find_all("input")
     for i in range(len(inputag)-1):
         name.append(inputag[i].get("name"))
         value.append(inputag[i].get("value"))
@@ -170,17 +130,17 @@ def main():
     try:
         if soup.find("form").get("method").lower() == "get":
             method = "get"
-            xss_insert(s, action, method, xss, name, driver)
+            xss_insert(s, action, method, xss, name, value, driver)
         elif soup.find("form").get("method").lower() == "post":
             method = "post"
-            xss_insert(s, action, method, xss, name, driver)
+            xss_insert(s, action, method, xss, name, value, driver)
         else:
             method = "get"
-            xss_insert(s, action, method, xss, name, driver)
+            xss_insert(s, action, method, xss, name, value, driver)
     # methodがないときの処理
-    except:
+    except AttributeError:
         method = "get"
-        xss_insert(s, action, method, xss, name, driver)
+        xss_insert(s, action, method, xss, name, value, driver)
 
 
 if __name__ == '__main__':

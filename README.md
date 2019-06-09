@@ -11,6 +11,7 @@ Overview
 - There are seveal form,input xss_patern each form
 - add detect xss auditor function
 - add auto page transition function
+- add resume function
 
 ## Requirement
 - python3
