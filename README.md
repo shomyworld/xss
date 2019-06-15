@@ -29,6 +29,7 @@ optional arguments:
   -c, --chrome   with Chrome
   -m, --manual   manual login
   -a, --auto     auto login
+  -n, --nologin  site without login function
 
 cat credential/qiita
 
