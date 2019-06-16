@@ -36,7 +36,7 @@ print(pycolor.RED+logo+pycolor.END+"\n")
 def payload():
     # xss_patternをxss配列に書き込む
     xss = []
-    with open("xss_pattern", "r") as f:
+    with open("xss_tmp_pattern", "r") as f:
         xss = f.read().splitlines()
     return xss
 
@@ -55,7 +55,7 @@ def xss_insert(s, url, method, xss, name, value, driver):
             URL = r.url
             # JavaScriptで新規タブを開く
             driver.execute_script("window.open("+"'"+URL+"'"+", 'newtab')")
-            time.sleep(3)
+            time.sleep(1)
     else:
         print("method = post")
         for x in xss:
@@ -65,10 +65,11 @@ def xss_insert(s, url, method, xss, name, value, driver):
                     data[n] = x
                 else:
                     data[n] = v  # 送信するパラメータ
+            print(data)
             r = s.post(url, data=data)
             URL = r.url
             driver.execute_script("window.open("+"'"+URL+"'"+", 'newtab')")
-            time.sleep(3)
+            time.sleep(1)
 
 
 # 相対URLか絶対URLかで、送信先を決める
@@ -81,7 +82,7 @@ def check_url(soup, url):
             return action
         # actionがhttpから始まらない場合の処理
         else:
-            pattern = r"(?:https?|ftps?)://([A-Za-z0-9-]{1,63}\.)*(?:(com)|(org)|([A-Za-z0-9-]{1,63}\.)([A-Za-z0-9-]{1,63}))"
+            pattern = r"(?:https?|ftps?)://([A-Za-z0-9-]{1,63}\.)*(?:(com)|(org)|([A-Za-z0-9-]{1,63}\.)([A-Za-z0-9-]{1,63})):?[0-9]*"
             res = re.match(pattern, url)
             domain = res.group()
             return domain + action
@@ -95,7 +96,6 @@ def main():
 
     # 引数を解析
     r, s, url, driver, flag = arg()
-
     # nologinオプションの時の処理
     if flag:
         driver.get(url)
@@ -103,44 +103,63 @@ def main():
         # ログイン後のsessionをseleniumに渡す
         session_to_selenium(r, s, url, driver)
 
-    inputag = []
-    name = []
-    value = []
 
     # Javascriptが起動した状態のhtmlを取得
     html = driver.page_source.encode('utf-8')
     soup = BeautifulSoup(html, "html.parser")
+    # 自動遷移
+    pattern = r"(?:https?|ftps?)://([A-Za-z0-9-]{1,63}\.)*(?:(com)|(org)|([A-Za-z0-9-]{1,63}\.)([A-Za-z0-9-]{1,63})):?[0-9]*"
+    res = re.match(pattern, url)
+    base_url = res.group()
+    a = soup.find_all("a")
+    URL = []
+    for i in a:
+        if i.get("href") is not None and str(i.get("href"))[0]=='/':
+            URL.append(base_url + i.get("href"))
+    for u in URL:
+        print(u)
+        inputag = []
+        name = []
+        value = []
+        if 'logout' not in str(u):
+            driver.get(u)
+            html = driver.page_source.encode('utf-8')
+            soup = BeautifulSoup(html, "html.parser")
+            # formの処理
+            for form in soup.find_all("form"):
+                flag = False
+                if form is not None:
+                    for i in form.find_all("input"):
+                        if i.get("type") == "text" or i.get("type") == "radio" or i.get("type") == "textarea" or i.get("type") == "checkbox":
+                            flag = True
+                    if not flag:
+                        print("continue",u)
+                        continue
+                    inputag = form.find_all("input")
+                    for i in range(len(inputag)-1):
+                        name.append(inputag[i].get("name"))
+                        value.append(inputag[i].get("value"))
 
-    # formの処理
-    form = soup.find("form")
-    # inputag = soup.find_all("input")
-    inputag = soup.form.find_all("input")
-    for i in range(len(inputag)-1):
-        name.append(inputag[i].get("name"))
-        value.append(inputag[i].get("value"))
-
-    if isinstance(form.get("action"), type(None)):
-        action = url
-    else:
-        action = check_url(soup, url)
-
-    print("action = ", action)
-
-    # xss入力
-    try:
-        if soup.find("form").get("method").lower() == "get":
-            method = "get"
-            xss_insert(s, action, method, xss, name, value, driver)
-        elif soup.find("form").get("method").lower() == "post":
-            method = "post"
-            xss_insert(s, action, method, xss, name, value, driver)
-        else:
-            method = "get"
-            xss_insert(s, action, method, xss, name, value, driver)
-    # methodがないときの処理
-    except AttributeError:
-        method = "get"
-        xss_insert(s, action, method, xss, name, value, driver)
+                    if isinstance(form.get("action"), type(None)):
+                        action = u
+                    else:
+                        action = base_url + form.get("action")
+                        # action = check_url(soup, u)
+                    # xss入力
+                    try:
+                        if form.get("method").lower() == "get":
+                            method = "get"
+                            xss_insert(s, action, method, xss, name, value, driver)
+                        elif form.get("method").lower() == "post":
+                            method = "post"
+                            xss_insert(s, action, method, xss, name, value, driver)
+                        else:
+                            method = "get"
+                            xss_insert(s, action, method, xss, name, value, driver)
+                    # methodがないときの処理
+                    except AttributeError:
+                        method = "get"
+                        xss_insert(s, action, method, xss, name, value, driver)
 
 
 if __name__ == '__main__':

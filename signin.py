@@ -5,6 +5,7 @@ from selenium import webdriver
 import argparse
 import sys
 import re
+import time
 
 
 def usage():
@@ -108,10 +109,8 @@ def auto_login(driver):
         else:
             element[i.get('name')] = i.get('value')
     # ログイン
-    print(url)
     r = s.post(url, data=element)
-    print(r.status_code)
-    return r, s, url
+    return r, s, r.url
 
 
 # 対話的にログインする
@@ -138,10 +137,8 @@ def manual_login(driver):
         else:
             element[i.get('name')] = i.get('value')
     # ログイン
-    print(url)
     r = s.post(url, data=element)
-    print(r.status_code)
-    return r, s, url
+    return r, s, r.url
 
 
 # ログイン機能のいらないサイト
@@ -167,6 +164,7 @@ def session_to_selenium(r, s, url, driver):
         driver.add_cookie(tmp)
     # ログイン後のページを表示
     driver.get(url)
+    time.sleep(5)
 
 
 def main():
