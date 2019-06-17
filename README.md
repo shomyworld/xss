@@ -12,6 +12,9 @@ Overview
 - add detect xss auditor function
 - add auto page transition function
 - add resume function
+- add auto sign up function
+- add fileupload xss function
+- add UI
 
 ## Requirement
 - python3

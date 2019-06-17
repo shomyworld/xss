@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 import re
 from signin import session_to_selenium
 from signin import arg
+from selenium.webdriver.common.alert import Alert
+from selenium.common import exceptions
 
 
 class pycolor:
@@ -41,9 +43,8 @@ def payload():
     return xss
 
 
-def xss_insert(s, url, method, xss, name, value, driver):
+def xss_insert_requests(s, url, method, xss, name, value, driver):
     if method == "get":
-        print("method = get")
         for x in xss:
             data = {}
             for n, v in zip(name, value):
@@ -55,9 +56,8 @@ def xss_insert(s, url, method, xss, name, value, driver):
             URL = r.url
             # JavaScriptで新規タブを開く
             driver.execute_script("window.open("+"'"+URL+"'"+", 'newtab')")
-            time.sleep(1)
     else:
-        print("method = post")
+        print(url)
         for x in xss:
             data = {}
             for n, v in zip(name, value):
@@ -66,10 +66,21 @@ def xss_insert(s, url, method, xss, name, value, driver):
                 else:
                     data[n] = v  # 送信するパラメータ
             print(data)
-            r = s.post(url, data=data)
+            proxies = {"http": "http://127.0.0.1:8080", "https": "http://127.0.0.1:8080"}
+            r = s.post(url, data=data, proxies=proxies, verify=False)
             URL = r.url
             driver.execute_script("window.open("+"'"+URL+"'"+", 'newtab')")
-            time.sleep(1)
+
+
+def xss_insert_selenium(xss, name, value, type_, driver):
+    for x in xss:
+        for n, v, t in zip(name, value, type_):
+            if v == '' or v is None:
+                driver.find_element_by_name(n).send_keys(x)
+            elif t == "submit":
+                submit = driver.find_element_by_name(n)
+        submit.click()
+        time.sleep(3)
 
 
 # 相対URLか絶対URLかで、送信先を決める
@@ -90,6 +101,11 @@ def check_url(soup, url):
         return url
 
 
+def create_report():
+    with open("report","w") as f:
+        f.write("aaaa")
+
+
 def main():
     # xssをロードする
     xss = payload()
@@ -103,7 +119,6 @@ def main():
         # ログイン後のsessionをseleniumに渡す
         session_to_selenium(r, s, url, driver)
 
-
     # Javascriptが起動した状態のhtmlを取得
     html = driver.page_source.encode('utf-8')
     soup = BeautifulSoup(html, "html.parser")
@@ -114,13 +129,17 @@ def main():
     a = soup.find_all("a")
     URL = []
     for i in a:
-        if i.get("href") is not None and str(i.get("href"))[0]=='/':
+        if i.get("href") is not None and str(i.get("href"))[0] == '/':
             URL.append(base_url + i.get("href"))
+    c = 0
     for u in URL:
-        print(u)
-        inputag = []
-        name = []
-        value = []
+        """
+        if u == 'http://13.230.216.189:3000/users/4/paid_time_off' or u == 'http://13.230.216.189:3000/users/4/account_settings':
+            continue
+        """
+        c += 1
+        print("-------------------------------------------ページ{}----------------------------------------------------".format(c))
+        print("[+] 現在URL :", u)
         if 'logout' not in str(u):
             driver.get(u)
             html = driver.page_source.encode('utf-8')
@@ -133,14 +152,32 @@ def main():
                         if i.get("type") == "text" or i.get("type") == "radio" or i.get("type") == "textarea" or i.get("type") == "checkbox":
                             flag = True
                     if not flag:
-                        print("continue",u)
                         continue
                     inputag = form.find_all("input")
-                    for i in range(len(inputag)-1):
+                    name = []
+                    value = []
+                    type_ = []
+
+                    for i in range(len(inputag)):
                         name.append(inputag[i].get("name"))
                         value.append(inputag[i].get("value"))
+                        type_.append(inputag[i].get("type"))
+                    try:
+                        xss_insert_selenium(xss, name, value, type_, driver)
+                    except exceptions.UnexpectedAlertPresentException:
+                        print("UnexpectedAlertPresentException")
+                        Alert(driver).accept()
+                        # driver.close()
+                    except exceptions.WebDriverException:
+                        print("pass")
+                    """
+                    except WebDriverException:
+                        print("WebDriverException")
+                        Alert(driver).accept()
+                    """
+                    """
 
-                    if isinstance(form.get("action"), type(None)):
+                    if isinstance(form.get("action"), type(None)) or form.get("action") == "#":
                         action = u
                     else:
                         action = base_url + form.get("action")
@@ -149,17 +186,19 @@ def main():
                     try:
                         if form.get("method").lower() == "get":
                             method = "get"
-                            xss_insert(s, action, method, xss, name, value, driver)
+                            xss_insert_requests(s, action, method, xss, name, value, driver)
                         elif form.get("method").lower() == "post":
                             method = "post"
-                            xss_insert(s, action, method, xss, name, value, driver)
+                            xss_insert_requests(s, action, method, xss, name, value, driver)
                         else:
                             method = "get"
-                            xss_insert(s, action, method, xss, name, value, driver)
+                            xss_insert_requests(s, action, method, xss, name, value, driver)
                     # methodがないときの処理
                     except AttributeError:
                         method = "get"
-                        xss_insert(s, action, method, xss, name, value, driver)
+                        xss_insert_requests(s, action, method, xss, name, value, driver)
+                    """
+    create_report()
 
 
 if __name__ == '__main__':
