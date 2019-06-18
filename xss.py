@@ -7,7 +7,7 @@ from signin import arg
 from selenium.webdriver.common.alert import Alert
 from selenium.common import exceptions
 
-
+report = ''
 class pycolor:
     BLACK = '\033[30m'
     RED = '\033[31m'
@@ -43,33 +43,47 @@ def payload():
     return xss
 
 
-def xss_insert_requests(s, url, method, xss, name, value, driver):
+def xss_insert_requests(s, url, method, xss, name, value, driver,type_):
+    global report
     if method == "get":
         for x in xss:
             data = {}
-            for n, v in zip(name, value):
+            for n, v, t in zip(name, value, type_):
                 if v == '' or v is None:
                     data[n] = x
+                elif t == "submit":
+                    pass
                 else:
-                    data[n] = v  # 送信するパラメータ
+                    data[n] = v
+            report = x
+            print(data)
             r = s.get(url, params=data)  # bug
             URL = r.url
             # JavaScriptで新規タブを開く
-            driver.execute_script("window.open("+"'"+URL+"'"+", 'newtab')")
+            script = "window.open('{}', 'newtab')".format(URL)
+            driver.execute_script(script)
+            driver.refresh()
+            print("refresh")
+            time.sleep(2)
     else:
-        print(url)
         for x in xss:
             data = {}
-            for n, v in zip(name, value):
+            for n, v, t in zip(name, value, type_):
                 if v == '' or v is None:
                     data[n] = x
+                elif t == "submit":
+                    pass
                 else:
                     data[n] = v  # 送信するパラメータ
             print(data)
-            proxies = {"http": "http://127.0.0.1:8080", "https": "http://127.0.0.1:8080"}
-            r = s.post(url, data=data, proxies=proxies, verify=False)
+            report = x
+            r = s.post(url, data=data)
             URL = r.url
-            driver.execute_script("window.open("+"'"+URL+"'"+", 'newtab')")
+            script = "window.open('{}', 'newtab')".format(URL)
+            driver.execute_script(script)
+            driver.refresh()
+            print("refresh")
+            time.sleep(2)
 
 
 def xss_insert_selenium(xss, name, value, type_, driver):
@@ -79,7 +93,10 @@ def xss_insert_selenium(xss, name, value, type_, driver):
                 driver.find_element_by_name(n).send_keys(x)
             elif t == "submit":
                 submit = driver.find_element_by_name(n)
+        global report
+        report = x
         submit.click()
+        driver.refresh()
         time.sleep(3)
 
 
@@ -99,11 +116,6 @@ def check_url(soup, url):
             return domain + action
     except AttributeError:
         return url
-
-
-def create_report():
-    with open("report","w") as f:
-        f.write("aaaa")
 
 
 def main():
@@ -127,29 +139,65 @@ def main():
     res = re.match(pattern, url)
     base_url = res.group()
     a = soup.find_all("a")
+    if not a:
+        for form in soup.find_all("form"):
+            inputag = form.find_all("input")
+            name = []
+            value = []
+            type_ = []
+            for i in range(len(inputag)):
+                name.append(inputag[i].get("name"))
+                value.append(inputag[i].get("value"))
+                type_.append(inputag[i].get("type"))
+
+            if isinstance(form.get("action"), type(None)) or form.get("action") == "#":
+                action = url
+            else:
+                action = base_url + form.get("action")
+
+            # xss入力
+            try:
+                if form.get("method").lower() == "post":
+                    method = "post"
+                    xss_insert_requests(s, action, method, xss, name, value, driver, type_)
+                else:
+                    method = "get"
+                    xss_insert_requests(s, action, method, xss, name, value, driver, type_)
+            # methodがないときの処理
+            except AttributeError:
+                method = "get"
+                xss_insert_requests(s, action, method, xss, name, value, driver, type_)
+            except exceptions.WebDriverException:
+                pass
+
     URL = []
+    URL.append(url)
     for i in a:
-        if i.get("href") is not None and str(i.get("href"))[0] == '/':
-            URL.append(base_url + i.get("href"))
+        if i.get("href") != '':
+            if i.get("href") is not None and str(i.get("href"))[0] == '/':
+                URL.append(base_url + i.get("href"))
+            elif i.get("href") is not None and str(i.get("href"))[0] != '/':
+                URL.append(base_url + '/' + i.get("href"))
     c = 0
     for u in URL:
-        """
-        if u == 'http://13.230.216.189:3000/users/4/paid_time_off' or u == 'http://13.230.216.189:3000/users/4/account_settings':
+        if u == "http://13.230.216.189:3000/users/10/account_settings" or u == 'http://13.230.216.189:3000/users/10/paid_time_off':
             continue
-        """
         c += 1
         print("-------------------------------------------ページ{}----------------------------------------------------".format(c))
         print("[+] 現在URL :", u)
         if 'logout' not in str(u):
-            driver.get(u)
-            html = driver.page_source.encode('utf-8')
+            try:
+                driver.get(u)
+                html = driver.page_source.encode('utf-8')
+            except exceptions.UnexpectedAlertPresentException:
+                Alert(driver).accept()
             soup = BeautifulSoup(html, "html.parser")
             # formの処理
             for form in soup.find_all("form"):
                 flag = False
                 if form is not None:
                     for i in form.find_all("input"):
-                        if i.get("type") == "text" or i.get("type") == "radio" or i.get("type") == "textarea" or i.get("type") == "checkbox":
+                        if i.get("type") == "text" or i.get("type") == "radio" or i.get("type") == "textarea" or i.get("type") == "checkbox" or i.get("type") == "search":
                             flag = True
                     if not flag:
                         continue
@@ -157,48 +205,75 @@ def main():
                     name = []
                     value = []
                     type_ = []
-
                     for i in range(len(inputag)):
                         name.append(inputag[i].get("name"))
                         value.append(inputag[i].get("value"))
                         type_.append(inputag[i].get("type"))
+
+                    # seleniumでXSS
                     try:
                         xss_insert_selenium(xss, name, value, type_, driver)
                     except exceptions.UnexpectedAlertPresentException:
                         print("UnexpectedAlertPresentException")
                         Alert(driver).accept()
-                        # driver.close()
+                        with open("report", "a") as f:
+                            f.write(u+" : ")
+                            f.write(report+"\n")
                     except exceptions.WebDriverException:
                         print("pass")
-                    """
-                    except WebDriverException:
-                        print("WebDriverException")
-                        Alert(driver).accept()
-                    """
-                    """
 
+                    """
+                    # requestsでXSS
                     if isinstance(form.get("action"), type(None)) or form.get("action") == "#":
                         action = u
                     else:
                         action = base_url + form.get("action")
-                        # action = check_url(soup, u)
+                    print(action)
                     # xss入力
-                    try:
-                        if form.get("method").lower() == "get":
-                            method = "get"
-                            xss_insert_requests(s, action, method, xss, name, value, driver)
-                        elif form.get("method").lower() == "post":
+                    if form.get("method"):
+                        if form.get("method").lower() == "post":
                             method = "post"
-                            xss_insert_requests(s, action, method, xss, name, value, driver)
+                            try:
+                                xss_insert_requests(s, action, method, xss, name, value, driver, type_)
+                            except exceptions.UnexpectedAlertPresentException:
+                                print("UnexpectedAlertPresentException")
+                                Alert(driver).accept()
+                                with open("report","a") as f:
+                                    f.write(u+" : ")
+                                    print("report=",report)
+                                    f.write(report+"\n")
+                            except exceptions.WebDriverException:
+                                print("pass")
                         else:
                             method = "get"
-                            xss_insert_requests(s, action, method, xss, name, value, driver)
+                            try:
+                                xss_insert_requests(s, action, method, xss, name, value, driver, type_)
+                            except exceptions.UnexpectedAlertPresentException:
+                                print("UnexpectedAlertPresentException")
+                                Alert(driver).accept()
+                                with open("report","a") as f:
+                                    f.write(u+" : ")
+                                    print("report=",report)
+                                    f.write(report+"\n")
+                            except exceptions.WebDriverException:
+                                print("pass")
                     # methodがないときの処理
-                    except AttributeError:
+                    else:
+                        print(form.get("method"))
+                        print("else")
                         method = "get"
-                        xss_insert_requests(s, action, method, xss, name, value, driver)
+                        try:
+                            xss_insert_requests(s, action, method, xss, name, value, driver, type_)
+                        except exceptions.UnexpectedAlertPresentException:
+                            print("UnexpectedAlertPresentException")
+                            Alert(driver).accept()
+                            with open("report","a") as f:
+                                f.write(u+" : ")
+                                f.write(report+"\n")
+                        except exceptions.WebDriverException:
+                            print("pass")
                     """
-    create_report()
+
 
 
 if __name__ == '__main__':

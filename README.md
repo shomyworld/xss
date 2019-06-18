@@ -8,13 +8,11 @@ Overview
 - manual login function
 
 ## Ticket
-- There are seveal form,input xss_patern each form
-- add detect xss auditor function
-- add auto page transition function
 - add resume function
 - add auto sign up function
 - add fileupload xss function
 - add UI
+- create report
 
 ## Requirement
 - python3

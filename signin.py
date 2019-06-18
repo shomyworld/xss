@@ -68,6 +68,7 @@ def getSoup(r):
 
 # 相対URLか絶対URLかで、送信先を決める
 def check_url(soup, url):
+    print(soup)
     try:
         action = soup.get("action")
         # 絶対URLの場合
@@ -106,6 +107,7 @@ def auto_login(driver):
     for i in input_all:
         if i.get('value') is None or i.get('value') == '':
             element[i.get('name')] = input(i.get('name')+' : ')
+            print()
         else:
             element[i.get('name')] = i.get('value')
     # ログイン
@@ -134,12 +136,37 @@ def manual_login(driver):
     for i in input_all:
         if i.get('value') is None or i.get('value') == '':
             element[i.get('name')] = input(i.get('name')+' : ')
+            print()
         else:
             element[i.get('name')] = i.get('value')
     # ログイン
     r = s.post(url, data=element)
     return r, s, r.url
 
+def login():
+    url = input("target url > ")
+    driver = webdriver.Chrome()
+    driver.get(url)
+    html = driver.page_source.encode('utf-8')
+    soup = BeautifulSoup(html, "html.parser")
+    name = []
+    value = []
+    type_ = []
+    for form in soup.find_all("form"):
+        inputag = form.find_all("input")
+        for f in form.find_all(attrs={"type":"submit"}):
+            print(f)
+            submit = driver.find_element_by_name(str(f.get("name")))
+        for i in range(len(inputag)):
+            name.append(inputag[i].get("name"))
+            value.append(inputag[i].get("value"))
+            type_.append(inputag[i].get("type"))
+    for n, v, t in zip(name,value,type_):
+        if v == '' or v is None:
+            x = input(n+" : ")
+            driver.find_element_by_name(n).send_keys(x)
+    # formの中のtypeがsubmitの要素をクリックする
+    submit.click()
 
 # ログイン機能のいらないサイト
 def nologin():
